@@ -1,13 +1,10 @@
 package io.contained.internals;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Spliterator;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-public class Path implements Iterable<String> {
+public class Path {
     private static final String DEFAULT_DELIMITER = "/";
     private static final Pattern DELIMITER = Pattern.compile("[/\\\\]");
     private final String usedDelimiter;
@@ -39,34 +36,16 @@ public class Path implements Iterable<String> {
         if (path.isEmpty()) {
             return null;
         }
-        if (path.size() == 1) {
-            return new Path("");
-        }
         return new Path(String.join(usedDelimiter, path.subList(0, path.size() - 1)));
     }
 
     public String join(String name) {
-        return this + usedDelimiter + name;
+        return mapIfNotEmpty(() -> this + usedDelimiter + name, usedDelimiter + name);
     }
 
     @Override
     public String toString() {
         return mapIfNotEmpty(() -> String.join(usedDelimiter, path), usedDelimiter);
-    }
-
-    @Override
-    public Iterator<String> iterator() {
-        return path.iterator();
-    }
-
-    @Override
-    public void forEach(Consumer<? super String> action) {
-        path.forEach(action);
-    }
-
-    @Override
-    public Spliterator<String> spliterator() {
-        return path.spliterator();
     }
 
     private String normalize(String path) {

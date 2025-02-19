@@ -27,6 +27,7 @@ public class AllocationTable {
         for (int i = 0; i < blockCount; i++) {
             bitIndex = table.nextClearBit(bitIndex);
             blocks.add(bitIndex);
+            bitIndex++;
         }
         return blocks;
     }
