@@ -11,8 +11,6 @@ public class Container extends ContainerOperations {
 
     Container(Partition partition, ContainerDescriptor descriptor, AllocationTable allocationTable) {
         super(descriptor, allocationTable, ContainerDescriptor.BYTES + allocationTable.size(), partition);
-        //TODO just for now
-        allocationTable.allocateBlocks(List.of(0));
     }
 
     public void createDir(String path) throws IOException {

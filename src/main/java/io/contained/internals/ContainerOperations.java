@@ -8,14 +8,7 @@ import java.util.*;
 public abstract class ContainerOperations implements AutoCloseable {
     private final ContainerDescriptor descriptor;
     private final AllocationTable allocationTable;
-
-    //TODO: improve encapsulation
-    public int getMasterBlockSize() {
-        return masterBlockSize;
-    }
-
     private final int masterBlockSize;
-
     private final Partition partition;
 
     protected ContainerOperations(ContainerDescriptor descriptor, AllocationTable allocationTable,
@@ -24,6 +17,11 @@ public abstract class ContainerOperations implements AutoCloseable {
         this.allocationTable = allocationTable;
         this.masterBlockSize = masterBlockSize;
         this.partition = partition;
+    }
+
+    //TODO: improve encapsulation
+    public int getMasterBlockSize() {
+        return masterBlockSize;
     }
 
     protected int relativePosition(int position) {

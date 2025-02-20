@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 
 public final class Filesystem {
     public Container create(Path path, int size) throws IOException {
@@ -38,6 +39,7 @@ public final class Filesystem {
 
         var rootMetaData = new MetaDataBlock(new byte[0]);
         partition.writeBytes(rootMetaData.toByteArray(), container.getMasterBlockSize());
+        allocationTable.allocateBlocks(List.of(0));
 
         return container;
     }
