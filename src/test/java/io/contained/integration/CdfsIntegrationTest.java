@@ -2,32 +2,191 @@ package io.contained.integration;
 
 import io.contained.Container;
 import io.contained.Filesystem;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class CdfsIntegrationTest {
     @Test
-    @Disabled
-    public void cdfsTest() throws Exception {
-        var fs = new Filesystem();
-        Container container;
-        try {
-            container = fs.open(Paths.get("test.txt"));
+    public void testFilesystemCreationSuccess() throws IOException {
+        var testFilePath = Paths.get("testCreateSuccess");
+        try (var container = Filesystem.create(testFilePath, 1)) {
+            assertThat(container).isNotNull();
+            assertThat(Files.exists(testFilePath)).isTrue();
         } catch (Exception e) {
-            container = fs.create(Paths.get("test.txt"), 1);
+            throw new RuntimeException(e);
+        } finally {
+            Files.delete(testFilePath);
         }
-//        container.createFile("file1", "hello".getBytes());
-        var dir = container.listDir("");
-        System.out.println(dir.toString());
-//        container.createDir("dir2/dir22");
-//        container.rename("dir1", dir1"dir2");
-//        container.createDir("dir4");
-        dir = container.listDir("dir2");
-        System.out.println(dir.toString());
-        var file = container.read("file1");
-        System.out.println(file.toString());
+    }
+
+    @Test
+    public void testFilesystemCreationFailure() throws IOException {
+        var testFilePath = Paths.get("testCreateFailure");
+        Files.createFile(testFilePath);
+        assertThatThrownBy(() -> Filesystem.create(testFilePath, 1))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Filesystem already exists: " + testFilePath);
+        Files.delete(testFilePath);
+    }
+
+    @Test
+    public void testSuccessfulFilesystemOpen() throws Exception {
+        var testFilePath = Paths.get("testOpenSuccess");
+        var container = Filesystem.create(testFilePath, 1);
         container.close();
+
+        try (var openedContainer = Filesystem.open(testFilePath)) {
+            assertThat(openedContainer).isNotNull();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            Files.delete(testFilePath);
+        }
+    }
+
+    @Test
+    public void testProjectDirectoryOperations() throws Exception {
+        var testFilePath = Paths.get("testProjectDirectoryOperations");
+        var filesToDelete = new ArrayList<String>();
+        var filesToKeep = new ArrayList<String>();
+        try (var container = Filesystem.create(testFilePath, 3)) {
+            var currDirPath = Paths.get("");
+
+            var createdFiles = copyFilesAndDirectoriesToContainer(currDirPath, container, testFilePath);
+            listContainerContent(currDirPath, container, testFilePath);
+
+            var seventyPercentThreshold = (int) Math.ceil((float) createdFiles.size() * 0.7F);
+            filesToDelete.addAll(createdFiles.subList(0, seventyPercentThreshold));
+            filesToKeep.addAll(createdFiles.subList(seventyPercentThreshold, createdFiles.size()));
+            removeFilesFromContainer(container, filesToDelete);
+
+            var deletedAllFiles = true;
+            for (var file : filesToDelete) {
+                try {
+                    container.read(file);
+                    deletedAllFiles = false;
+                    break;
+                } catch (Exception e) {
+                    //Ignore it as we expect to fail to read all of them
+                }
+            }
+            assertThat(deletedAllFiles).isTrue();
+
+            var keptAllFiles = true;
+            for (var file : filesToKeep) {
+                try {
+                    container.read(file);
+                } catch (Exception e) {
+                    keptAllFiles = false;
+                    break;
+                }
+            }
+            assertThat(keptAllFiles).isTrue();
+
+            container.createDir("/newRoot");
+            filesToKeep.addAll(copyFilesAndDirectoriesToContainer(currDirPath, container, testFilePath, "newRoot"));
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        try (var container = Filesystem.open(testFilePath)) {
+            var deletedAllFiles = true;
+            for (var file : filesToDelete) {
+                try {
+                    container.read(file);
+                    deletedAllFiles = false;
+                    break;
+                } catch (Exception e) {
+                    //Ignore it as we expect to fail to read all of them
+                }
+            }
+            assertThat(deletedAllFiles).isTrue();
+
+            var keptAllFiles = true;
+            for (var file : filesToKeep) {
+                try {
+                    container.read(file);
+                } catch (Exception e) {
+                    keptAllFiles = false;
+                    break;
+                }
+            }
+            assertThat(keptAllFiles).isTrue();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            Files.delete(testFilePath);
+        }
+    }
+
+    private List<String> copyFilesAndDirectoriesToContainer(Path currDir, Container container, Path testFilePath) throws IOException {
+        return copyFilesAndDirectoriesToContainer(currDir, container, testFilePath, "");
+    }
+
+    private List<String> copyFilesAndDirectoriesToContainer(Path currDir, Container container, Path testFilePath, String parent) throws IOException {
+        var createdFiles = new ArrayList<String>();
+        try (Stream<Path> stream = Files.walk(currDir)) {
+            stream.forEach(path -> {
+                var process = !path.equals(currDir)
+                    && !path.equals(testFilePath)
+                    && !path.toString().startsWith("target")
+                    && !path.toString().startsWith(".git");
+                if (process) {
+                    try {
+                        if (Files.isDirectory(path)) {
+                            container.createDir(parent + "/" + path);
+                        } else {
+                            container.createFile(parent + "/" + path, Files.readAllBytes(path));
+                            createdFiles.add(parent + "/" + path);
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        }
+        return createdFiles;
+    }
+
+    private void listContainerContent(Path currDir, Container container, Path testFilePath) throws IOException {
+        listContainerContent(currDir, container, testFilePath, "");
+    }
+
+    private void listContainerContent(Path currDir, Container container, Path testFilePath, String parent) throws IOException {
+        try (Stream<Path> stream = Files.walk(currDir)) {
+            stream.forEach(path -> {
+                var process = !path.equals(currDir)
+                    && !path.equals(testFilePath)
+                    && !path.toString().startsWith("target")
+                    && !path.toString().startsWith(".git");
+                if (process) {
+                    try {
+                        if (Files.isDirectory(path)) {
+                            var dir = container.listDir(parent + "/" + path);
+                            System.out.println(dir);
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        }
+    }
+
+    private void removeFilesFromContainer(Container container, List<String> files) throws IOException {
+        for (String file : files) {
+            container.delete(file);
+        }
     }
 }

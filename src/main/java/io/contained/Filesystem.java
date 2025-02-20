@@ -12,7 +12,9 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 public final class Filesystem {
-    public Container create(Path path, int size) throws IOException {
+    private Filesystem() {}
+
+    public static Container create(Path path, int size) throws IOException {
         if (Files.exists(path)) {
             throw new IllegalArgumentException("Filesystem already exists: " + path);
         }
@@ -44,7 +46,7 @@ public final class Filesystem {
         return container;
     }
 
-    public Container open(Path path) throws IOException {
+    public static Container open(Path path) throws IOException {
         if (Files.notExists(path)) {
             throw new IllegalArgumentException("Filesystem not found: " + path);
         }
@@ -54,12 +56,17 @@ public final class Filesystem {
         var partition = new Partition(input, output);
 
         var descriptorBytes = partition.readBytes(0, ContainerDescriptor.BYTES);
-        var descriptor = ContainerDescriptor.fromByteArray(descriptorBytes);
+        try {
+            var descriptor = ContainerDescriptor.fromByteArray(descriptorBytes);
 
-        var allocationTableBytes = partition.readBytes(ContainerDescriptor.BYTES, AllocationTable.sizeOf(descriptor.getBlockCount()));
-        var allocationTable = AllocationTable.fromByteArray(allocationTableBytes);
-        //TODO: validate partition
+            var allocationTableBytes = partition.readBytes(ContainerDescriptor.BYTES, AllocationTable.sizeOf(descriptor.getBlockCount()));
+            var allocationTable = AllocationTable.fromByteArray(allocationTableBytes);
 
-        return new Container(partition, descriptor, allocationTable);
+            //TODO: validate partition (e.g. check signature)
+
+            return new Container(partition, descriptor, allocationTable);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("File is not compatible with cdfs");
+        }
     }
 }

@@ -106,7 +106,7 @@ public abstract class ContainerOperations implements AutoCloseable {
         if (dataInDataBlocksSize <= 0) {
             return 1;
         }
-        var occupiedBlocks = (int) Math.ceil((double) dataInDataBlocksSize / descriptor.getBlockSize() - DataBlock.META_BYTES);
+        var occupiedBlocks = (int) Math.ceil((double) dataInDataBlocksSize / (descriptor.getBlockSize() - DataBlock.META_BYTES));
         return occupiedBlocks + 1;
     }
 
