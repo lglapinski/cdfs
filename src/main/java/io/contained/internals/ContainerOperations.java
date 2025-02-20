@@ -164,7 +164,6 @@ public abstract class ContainerOperations implements AutoCloseable {
 
             var dataBlock = new DataBlock(
                 blocks.get(blocks.size() - 2),
-                Configuration.noAddressMarker,
                 Arrays.copyOfRange(bytes, dataIndex, bytes.length)
             );
             writeBlock(dataBlock, blocks.getLast());

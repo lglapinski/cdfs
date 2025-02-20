@@ -12,8 +12,8 @@ public class MetaDataBlock extends DataBlock {
     private int dataFullSize;
 
     private final boolean isDir;
-    public MetaDataBlock(byte[] name, boolean isDir) {
-        this(name, 0, isDir, Configuration.noAddressMarker, Configuration.noAddressMarker, new byte[0]);
+    public MetaDataBlock(byte[] name) {
+        this(name, 0, true, Configuration.noAddressMarker, Configuration.noAddressMarker, new byte[0]);
 
     }
 

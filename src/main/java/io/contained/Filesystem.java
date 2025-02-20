@@ -36,7 +36,7 @@ public final class Filesystem {
 
         var container = new Container(partition, descriptor, allocationTable);
 
-        var rootMetaData = new MetaDataBlock(new byte[0], true);
+        var rootMetaData = new MetaDataBlock(new byte[0]);
         partition.writeBytes(rootMetaData.toByteArray(), container.getMasterBlockSize());
 
         return container;
@@ -54,8 +54,7 @@ public final class Filesystem {
         var descriptorBytes = partition.readBytes(0, ContainerDescriptor.BYTES);
         var descriptor = ContainerDescriptor.fromByteArray(descriptorBytes);
 
-        var allocationTableBytes = partition
-            .readBytes(ContainerDescriptor.BYTES, AllocationTable.sizeOf(descriptor.getBlockCount()));
+        var allocationTableBytes = partition.readBytes(ContainerDescriptor.BYTES, AllocationTable.sizeOf(descriptor.getBlockCount()));
         var allocationTable = AllocationTable.fromByteArray(allocationTableBytes);
         //TODO: validate partition
 

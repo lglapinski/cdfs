@@ -39,7 +39,7 @@ public class Container extends ContainerOperations {
             throw new IOException(String.format("%s already exists", path));
         }
 
-        var newDirMetaDataBlock = new MetaDataBlock(ByteArrayTransformer.fromString(pathToDir.getName()), true);
+        var newDirMetaDataBlock = new MetaDataBlock(ByteArrayTransformer.fromString(pathToDir.getName()));
         List<Integer> blocks = getAvailableBlocks(1);
 
         writeBlock(newDirMetaDataBlock, blocks.getFirst());
