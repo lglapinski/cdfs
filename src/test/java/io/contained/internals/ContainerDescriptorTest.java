@@ -1,7 +1,5 @@
-package io.contained;
+package io.contained.internals;
 
-import io.contained.internals.Configuration;
-import io.contained.internals.ContainerDescriptor;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,6 +15,7 @@ public class ContainerDescriptorTest {
         assertThat(descriptor.getBlockCount()).isEqualTo(bytesPerMB / descriptor.getBlockSize());
     }
 
+    //TODO: improve this?
     @Test
     public void testByteArrayConversion() {
         var descriptor = new ContainerDescriptor(1);

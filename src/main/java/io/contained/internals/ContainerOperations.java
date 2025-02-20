@@ -128,8 +128,6 @@ public abstract class ContainerOperations implements AutoCloseable {
                 ByteArrayTransformer.fromString(name),
                 bytes.length,
                 false,
-                Configuration.noAddressMarker,
-                Configuration.noAddressMarker,
                 Arrays.copyOfRange(bytes, 0, bytes.length)
             );
             writeBlock(dataBlock, blocks.getFirst());

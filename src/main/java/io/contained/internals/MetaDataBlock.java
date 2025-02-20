@@ -8,16 +8,19 @@ public class MetaDataBlock extends DataBlock {
     public static final int META_BYTES = 261 + DataBlock.META_BYTES; //256 + 4 + 1 + 12;
 
     private byte[] name;
-
     private int dataFullSize;
-
     private final boolean isDir;
+
     public MetaDataBlock(byte[] name) {
         this(name, 0, true, Configuration.noAddressMarker, Configuration.noAddressMarker, new byte[0]);
 
     }
 
-    protected MetaDataBlock(byte[] name, int dataFullSize, boolean isDir, int prevBlock, int nextBlock, byte[] data) {
+    public MetaDataBlock(byte[] name, int dataFullSize, boolean isDir, byte[] data) {
+        this(name, dataFullSize, isDir, Configuration.noAddressMarker, Configuration.noAddressMarker, data);
+    }
+
+    public MetaDataBlock(byte[] name, int dataFullSize, boolean isDir, int prevBlock, int nextBlock, byte[] data) {
         super(prevBlock, nextBlock, data);
         this.name = name;
         this.dataFullSize = dataFullSize;
