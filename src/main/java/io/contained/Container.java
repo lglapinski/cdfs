@@ -23,10 +23,8 @@ public class Container extends ContainerOperations {
         if (grandParentPath != null) {
             parentMetaDataBlock = traverseTo(grandParentPath);
             parentPosition = getChildBlock(parentMetaDataBlock, parentPath.getName());
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
-        } else {
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
         }
+        parentMetaDataBlock = readMetaDataBlock(parentPosition);
 
         if (!parentMetaDataBlock.isDir()) {
             throw new IOException(String.format("%s is not a dir", path));
@@ -65,10 +63,8 @@ public class Container extends ContainerOperations {
         if (grandParentPath != null) {
             parentMetaDataBlock = traverseTo(grandParentPath);
             parentPosition = getChildBlock(parentMetaDataBlock, parentPath.getName());
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
-        } else {
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
         }
+        parentMetaDataBlock = readMetaDataBlock(parentPosition);
 
         if (!parentMetaDataBlock.isDir()) {
             throw new IOException(String.format("%s is not a dir", path));
@@ -172,10 +168,8 @@ public class Container extends ContainerOperations {
         if (grandParentPath != null) {
             parentMetaDataBlock = traverseTo(grandParentPath);
             parentPosition = getChildBlock(parentMetaDataBlock, parentPath.getName());
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
-        } else {
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
         }
+        parentMetaDataBlock = readMetaDataBlock(parentPosition);
 
         var block = getChildBlock(parentMetaDataBlock, pathToDir.getName());
         var metaDataBlock = readMetaDataBlock(block);
@@ -223,10 +217,8 @@ public class Container extends ContainerOperations {
         if (grandParentPath != null) {
             parentMetaDataBlock = traverseTo(grandParentPath);
             parentPosition = getChildBlock(parentMetaDataBlock, parentPath.getName());
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
-        } else {
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
         }
+        parentMetaDataBlock = readMetaDataBlock(parentPosition);
 
         var block = getChildBlock(parentMetaDataBlock, pathToFile.getName());
         var metaDataBlock = readMetaDataBlock(block);
@@ -258,10 +250,8 @@ public class Container extends ContainerOperations {
         if (grandParentPath != null) {
             parentMetaDataBlock = traverseTo(grandParentPath);
             parentPosition = getChildBlock(parentMetaDataBlock, parentPath.getName());
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
-        } else {
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
         }
+        parentMetaDataBlock = readMetaDataBlock(parentPosition);
 
         var block = getChildBlock(parentMetaDataBlock, pathToFileOrDir.getName());
         var inodes = readInodes(parentMetaDataBlock);
@@ -289,10 +279,8 @@ public class Container extends ContainerOperations {
         if (grandParentPath != null) {
             parentMetaDataBlock = traverseTo(grandParentPath);
             parentPosition = getChildBlock(parentMetaDataBlock, parentPath.getName());
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
-        } else {
-            parentMetaDataBlock = readMetaDataBlock(parentPosition);
         }
+        parentMetaDataBlock = readMetaDataBlock(parentPosition);
 
         var dstPath = new Path(to);
         var dstParentPath = dstPath.getParentPath();

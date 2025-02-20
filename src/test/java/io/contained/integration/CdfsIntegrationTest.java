@@ -33,7 +33,11 @@ public class CdfsIntegrationTest {
     public void testFilesystemCreationFailure() throws IOException {
         var testFilePath = Paths.get("testCreateFailure");
         Files.createFile(testFilePath);
-        assertThatThrownBy(() -> Filesystem.create(testFilePath, 1))
+        assertThatThrownBy(() -> {
+            try (var c = Filesystem.create(testFilePath, 1)) {
+                assertThat(c).isNotNull();
+            }
+        })
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Filesystem already exists: " + testFilePath);
         Files.delete(testFilePath);
@@ -160,10 +164,6 @@ public class CdfsIntegrationTest {
     }
 
     private void listContainerContent(Path currDir, Container container, Path testFilePath) throws IOException {
-        listContainerContent(currDir, container, testFilePath, "");
-    }
-
-    private void listContainerContent(Path currDir, Container container, Path testFilePath, String parent) throws IOException {
         try (Stream<Path> stream = Files.walk(currDir)) {
             stream.forEach(path -> {
                 var process = !path.equals(currDir)
@@ -173,7 +173,7 @@ public class CdfsIntegrationTest {
                 if (process) {
                     try {
                         if (Files.isDirectory(path)) {
-                            var dir = container.listDir(parent + "/" + path);
+                            var dir = container.listDir(path.toString());
                             System.out.println(dir);
                         }
                     } catch (IOException e) {

@@ -1,7 +1,7 @@
 package io.contained.internals;
 
 public class Inode {
-    public static int BYTES = Configuration.filenameLength + Integer.BYTES + Byte.BYTES;
+    public static final int BYTES = Configuration.filenameLength + Integer.BYTES + Byte.BYTES;
     private String name;
     private final int block;
     private final boolean isDir;
