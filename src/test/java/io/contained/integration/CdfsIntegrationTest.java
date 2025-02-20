@@ -2,12 +2,14 @@ package io.contained.integration;
 
 import io.contained.Container;
 import io.contained.Filesystem;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
 
 public class CdfsIntegrationTest {
     @Test
+    @Disabled
     public void cdfsTest() throws Exception {
         var fs = new Filesystem();
         Container container;

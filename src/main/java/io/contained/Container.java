@@ -84,7 +84,7 @@ public class Container extends ContainerOperations {
         //I could pass this new dir block to expand method add to map and allocate block for it there... or pass information
         //there on how many blocks has to be allocated for new file/dir and save everything at the end
 
-        inodes.add(new Inode(pathToFile.getName(), blocks.getFirst(), true));
+        inodes.add(new Inode(pathToFile.getName(), blocks.getFirst(), false));
 
         var inodesAsBytes = ByteArrayTransformer.fromInodesList(inodes);
         writeDir(parentMetaDataBlock, parentPosition, inodesAsBytes);
@@ -295,8 +295,12 @@ public class Container extends ContainerOperations {
         }
 
         var dstPath = new Path(to);
-        var dstParentMetaData = traverseTo(dstPath.getParentPath());
-        var dstPosition = getChildBlock(dstParentMetaData, dstPath.getName());
+        var dstParentPath = dstPath.getParentPath();
+        var dstPosition = 0;
+        if (dstParentPath != null) {
+            var dstParentMetaData = traverseTo(dstPath.getParentPath());
+            dstPosition = getChildBlock(dstParentMetaData, dstPath.getName());
+        }
         var dstMetaDataBlock = readMetaDataBlock(dstPosition);
 
         if (!dstMetaDataBlock.isDir()) {

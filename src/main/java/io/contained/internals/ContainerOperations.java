@@ -253,26 +253,30 @@ public abstract class ContainerOperations implements AutoCloseable {
         metaDataBlock.setDataFullSize(bytes.length);
         blocksToWrite.put(position, metaDataBlock);
 
-        DataBlock dataBlock = metaDataBlock;
-        var currentPosition = position;
-        var dataIndex = 0;
+        if (!metaDataBlock.hasNextBlock()) {
+            metaDataBlock.setData(bytes);
+        } else {
+            DataBlock dataBlock = metaDataBlock;
+            var currentPosition = position;
+            var dataIndex = 0;
 
-        while (dataBlock.hasNextBlock()) {
-            dataBlock = readDataBlock(currentPosition);
-            dataBlock.setData(Arrays.copyOfRange(bytes, dataIndex, Math.min(bytes.length, dataIndex + dataBlock.getDataSize())));
-            blocksToWrite.put(currentPosition, dataBlock);
+            while (dataBlock.hasNextBlock()) {
+                dataBlock = readDataBlock(currentPosition);
+                dataBlock.setData(Arrays.copyOfRange(bytes, dataIndex, Math.min(bytes.length, dataIndex + dataBlock.getDataSize())));
+                blocksToWrite.put(currentPosition, dataBlock);
 
-            currentPosition = dataBlock.getNextBlock();
-            dataIndex += dataBlock.getDataSize();
-            if (dataIndex >= bytes.length) {
-                dataBlock.setNextBlock(Configuration.noAddressMarker);
-                orphanedBlocks.add(currentPosition);
+                currentPosition = dataBlock.getNextBlock();
+                dataIndex += dataBlock.getDataSize();
+                if (dataIndex >= bytes.length) {
+                    dataBlock.setNextBlock(Configuration.noAddressMarker);
+                    orphanedBlocks.add(currentPosition);
+                }
             }
-        }
-        dataBlock = readDataBlock(currentPosition);
-        while (dataBlock.hasNextBlock()) {
-            orphanedBlocks.add(dataBlock.getNextBlock());
-            dataBlock = readDataBlock(dataBlock.getNextBlock());
+            dataBlock = readDataBlock(currentPosition);
+            while (dataBlock.hasNextBlock()) {
+                orphanedBlocks.add(dataBlock.getNextBlock());
+                dataBlock = readDataBlock(dataBlock.getNextBlock());
+            }
         }
 
         for (var entry : blocksToWrite.entrySet()) {

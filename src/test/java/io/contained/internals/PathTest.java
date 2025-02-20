@@ -2,7 +2,7 @@ package io.contained.internals;
 
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class PathTest {
     @Test
@@ -64,5 +64,16 @@ public class PathTest {
 
         joined = path.join("foo");
         assertThat(joined).isEqualTo("/foo");
+    }
+
+    @Test
+    public void testExtractingParts() {
+        var path = new Path("/foo/bar");
+        var part = path.getPart(0);
+        assertThat(part).isEqualTo("");
+        part = path.getPart(1);
+        assertThat(part).isEqualTo("foo");
+        part = path.getPart(2);
+        assertThat(part).isEqualTo("bar");
     }
 }
