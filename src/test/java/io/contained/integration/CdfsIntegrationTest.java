@@ -2,6 +2,7 @@ package io.contained.integration;
 
 import io.contained.Container;
 import io.contained.Filesystem;
+import io.contained.internals.util.ByteArrayTransformer;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -63,9 +64,8 @@ public class CdfsIntegrationTest {
         var testFilePath = Paths.get("testProjectDirectoryOperations");
         var filesToDelete = new ArrayList<String>();
         var filesToKeep = new ArrayList<String>();
+        var currDirPath = Paths.get("");
         try (var container = Filesystem.create(testFilePath, 3)) {
-            var currDirPath = Paths.get("");
-
             var createdFiles = copyFilesAndDirectoriesToContainer(currDirPath, container, testFilePath);
             listContainerContent(currDirPath, container, testFilePath);
 
@@ -120,7 +120,11 @@ public class CdfsIntegrationTest {
             var keptAllFiles = true;
             for (var file : filesToKeep) {
                 try {
-                    container.read(file);
+                    var filePathOnDisk = file.replace("newRoot", "");
+                    var physicalFile = Files.readAllBytes(Paths.get(currDirPath.toAbsolutePath().toString(), filePathOnDisk));
+                    var containedFile = container.read(file);
+                    assertThat(ByteArrayTransformer.toString(containedFile.data()))
+                        .isEqualTo(ByteArrayTransformer.toString(physicalFile));
                 } catch (Exception e) {
                     keptAllFiles = false;
                     break;

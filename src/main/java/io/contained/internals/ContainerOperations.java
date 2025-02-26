@@ -33,8 +33,13 @@ public abstract class ContainerOperations implements AutoCloseable {
         return MetaDataBlock.fromByteArray(bytes);
     }
 
-    protected DataBlock readDataBlock(int position) throws IOException {
+    protected DataBlock readDataBlockMetaData(int position) throws IOException {
         byte[] bytes = partition.readBytes(relativePosition(position), DataBlock.META_BYTES);
+        return DataBlock.fromByteArray(bytes);
+    }
+
+    protected DataBlock readDataBlock(int position) throws IOException {
+        byte[] bytes = partition.readBytes(relativePosition(position), descriptor.getBlockSize());
         return DataBlock.fromByteArray(bytes);
     }
 
@@ -184,7 +189,7 @@ public abstract class ContainerOperations implements AutoCloseable {
         var dataIndex = 0;
 
         while (dataBlock.hasNextBlock()) {
-            dataBlock = readDataBlock(currentPosition);
+            dataBlock = readDataBlockMetaData(currentPosition);
             currentPosition = dataBlock.getNextBlock();
         }
 
@@ -240,7 +245,7 @@ public abstract class ContainerOperations implements AutoCloseable {
         DataBlock dataBlock = metaDataBlock;
         while (dataBlock.hasNextBlock()) {
             orphanedBlocks.add(dataBlock.getNextBlock());
-            dataBlock = readDataBlock(dataBlock.getNextBlock());
+            dataBlock = readDataBlockMetaData(dataBlock.getNextBlock());
         }
 
         freeBlocks(orphanedBlocks);
@@ -272,10 +277,10 @@ public abstract class ContainerOperations implements AutoCloseable {
                     orphanedBlocks.add(currentPosition);
                 }
             }
-            dataBlock = readDataBlock(currentPosition);
+            dataBlock = readDataBlockMetaData(currentPosition);
             while (dataBlock.hasNextBlock()) {
                 orphanedBlocks.add(dataBlock.getNextBlock());
-                dataBlock = readDataBlock(dataBlock.getNextBlock());
+                dataBlock = readDataBlockMetaData(dataBlock.getNextBlock());
             }
         }
 
@@ -296,11 +301,12 @@ public abstract class ContainerOperations implements AutoCloseable {
         var dataIndex = 0;
 
         while (dataBlock.hasNextBlock()) {
-            dataBlock = readDataBlock(currentPosition);
-
             if (overwrite) {
+                dataBlock = readDataBlock(currentPosition);
                 dataBlock.setData(Arrays.copyOfRange(bytes, dataIndex, dataIndex + dataBlock.getDataSize()));
                 blocksToWrite.put(currentPosition, dataBlock);
+            } else {
+                dataBlock = readDataBlockMetaData(currentPosition);
             }
 
             currentPosition = dataBlock.getNextBlock();
